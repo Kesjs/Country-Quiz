@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
-
+import { BallTriangle } from 'react-loader-spinner';
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simule un chargement pendant 3 secondes avant de cacher le loader
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000); // L'animation restera affichée pendant 3 secondes
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const [currentPage, setCurrentPage] = useState(1);
   const { width, height } = useWindowSize();
 
@@ -50,7 +61,6 @@ function App() {
     "Vancouver": "ca",
     "Montréal": "ca"
   };
-  
 
   const questions = [
     {
@@ -137,87 +147,87 @@ function App() {
     setSelectedAnswer(Array(questions.length).fill(null));
     setAnsweredQuestions(Array(questions.length).fill(false));
   };
-  
+
   return (
-    <>
-      <div className="container py-5 text-center">
-        <div className="d-flex justify-content-between align-items-center mb-4 px-3">
-          <h1 className="text-white fs-5 fs-md-4 fs-lg-3 m-0">Country Quiz</h1>
-          <button className="btn btn-secondary points ">{score}/10 Points</button>
-          {score === 10 && (
-  <>
-    <Confetti width={width} height={height} />
-    <div className="congrats-popup">
-      <div className="congrats-content text-white">
-        🎉 Félicitations ! Tu as obtenu 10/10 ! 🏆
-      </div>
-    </div>
-  </>
-)}
-
+    <div className="App">
+      {isLoading ? (
+        <div className="loading-container">
+          <BallTriangle color="#c58d2c" height={100} width={100} timeout={3000} />
+          <h3>Préparation du quiz...</h3>
         </div>
-      </div>
+      ) : (
+        <div className="container py-5 text-center">
+          <div className="d-flex justify-content-between align-items-center mb-4 px-3">
+            <h1 className="text-white fs-5 fs-md-4 fs-lg-3 m-0 typewriter">Country Quiz</h1>
+            <button className="btn btn-secondary points">{score}/10 Points</button>
+            {score === 10 && (
+              <>
+                <Confetti width={width} height={height} />
+                <div className="congrats-popup">
+                  <div className="congrats-content text-white">
+                    🎉 Félicitations ! Tu as obtenu 10/10 ! 🏆
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
-      <div className="custom-container mx-auto p-4">
-        <div className="circles-container d-flex justify-content-center mb-4">
-          {[...Array(10)].map((_, index) => (
-            <button 
-              key={index}
-              onClick={() => handleClick(index + 1)}
-              className={`circle ${currentPage === index + 1 ? 'active' : ''}`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+          <div className="custom-container mx-auto p-4">
+            <div className="circles-container d-flex justify-content-center mb-4">
+              {[...Array(10)].map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleClick(index + 1)}
+                  className={`circle ${currentPage === index + 1 ? 'active' : ''}`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
 
-        <h4>{questions[currentPage - 1].question}</h4>
-        <div className="options-grid mt-4">
-          {questions[currentPage - 1].options.map((option, index) => {
-            let className = "btn option-btn";
-            const selected = selectedAnswer[currentPage - 1];
-            const correctAnswer = questions[currentPage - 1].answer;
+            <h4 className="fade-in">{questions[currentPage - 1].question}</h4>
+            <div className="options-grid mt-4">
+              {questions[currentPage - 1].options.map((option, index) => {
+                let className = "btn option-btn";
+                const selected = selectedAnswer[currentPage - 1];
+                const correctAnswer = questions[currentPage - 1].answer;
 
-            if (selected) {
-              if (option === correctAnswer) {
-                className += " correct";
-              } else if (option === selected) {
-                className += " incorrect";
-              }
-            }
+                if (selected) {
+                  if (option === correctAnswer) {
+                    className += " correct";
+                  } else if (option === selected) {
+                    className += " incorrect";
+                  }
+                }
 
-            return (
-              <button 
-                key={index} 
-                className={className}
-                onClick={() => handleAnswerSelection(option)}
-                disabled={!!selected}
-              >
-                <img
-  src={`https://flagcdn.com/w40/${countryFlags[option]?.toLowerCase()}.png`}
-  alt={option}
-  className="me-2"
-  style={{ width: '25px', height: '18px', objectFit: 'cover', }}
-/>
-{option}
+                return (
+                  <button
+                    key={index}
+                    className={className}
+                    onClick={() => handleAnswerSelection(option)}
+                    disabled={!!selected}
+                  >
+                    <img
+                      src={`https://flagcdn.com/w40/${countryFlags[option]?.toLowerCase()}.png`}
+                      alt={option}
+                      className="me-2"
+                      style={{ width: '25px', height: '18px', objectFit: 'cover' }}
+                    />
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
 
-
+            <div className="text-center mt-5">
+              <button className="btn option" onClick={handleRestart}>
+                🔁 Recommencer le quiz
               </button>
-            );
-          })}
-           
+            </div>
+          </div>
         </div>
-
-        <div className="text-center mt-5">
-  <button className="btn option" onClick={handleRestart}>
-    🔁 Recommencer le quiz
-  </button>
-</div>
-
-        
-      </div>
-      
-    </>
+      )}
+    </div>
   );
 }
 
